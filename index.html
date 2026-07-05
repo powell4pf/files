@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NurturedChoiceProducts Sales System</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section id="loginView" class="login-view">
+        <div class="login-panel">
+          <p class="eyebrow">NurturedChoiceProducts</p>
+          <h1>Sales control room</h1>
+          <p class="muted">Manage stock, invoices, statements, credit notes, and monthly reports from one clean workspace.</p>
+          <form id="loginForm" class="stack">
+            <label>Username <input name="username" value="admin" autocomplete="username" /></label>
+            <label>Password <input name="password" value="admin123" type="password" autocomplete="current-password" /></label>
+            <button type="submit">Log in</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="appView" class="app-view hidden">
+        <aside class="sidebar">
+          <div>
+            <p class="eyebrow">NurturedChoice</p>
+            <h2>Sales System</h2>
+          </div>
+          <nav>
+            <button class="nav active" data-view="dashboard">Dashboard</button>
+            <button class="nav" data-view="products">Products</button>
+            <button class="nav" data-view="customers">Customers</button>
+            <button class="nav" data-view="invoices">Invoices</button>
+            <button class="nav" data-view="credit">Credit Notes</button>
+            <button class="nav" data-view="reports">Reports</button>
+          </nav>
+        </aside>
+
+        <section class="workspace">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">Business backend + frontend</p>
+              <h1 id="viewTitle">Dashboard</h1>
+            </div>
+            <div class="topbar-actions">
+              <div id="currentDate" class="date-box"></div>
+              <button id="quickInvoiceBtn" class="ghost">+ New Invoice</button>
+              <button id="refreshBtn" class="ghost">Refresh</button>
+              <button id="logoutBtn" class="ghost">Log out</button>
+            </div>
+          </header>
+
+          <section id="dashboard" class="view active-view">
+            <div class="metrics">
+              <article class="metric-card"><span>Active products</span><strong id="metricProducts">0</strong></article>
+              <article class="metric-card"><span>Stock units</span><strong id="metricStock">0</strong></article>
+              <article class="metric-card"><span>Invoices</span><strong id="metricInvoices">0</strong></article>
+              <article class="metric-card"><span>Total customers</span><strong id="metricCustomers">0</strong></article>
+              <article class="metric-card highlight"><span>Total sales</span><strong id="metricRevenue">KES 0.00</strong></article>
+            </div>
+            
+            <div class="dashboard-grid">
+              <div class="panel chart-container">
+                <h2>Business Volume Overview</h2>
+                <canvas id="businessChart"></canvas>
+              </div>
+              <div class="panel">
+                <h2>Top Performing Customers</h2>
+                <div class="table-wrap"><table id="topCustomersTable"></table></div>
+              </div>
+              <div class="panel">
+                <h2>Recent Document Activity</h2>
+                <div id="recentDocs" class="doc-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="products" class="view">
+            <div class="grid-two">
+              <form id="productForm" class="panel stack">
+                <h2>Add or update product</h2>
+                <input type="hidden" name="id" />
+                <label>Name <input name="name" required /></label>
+                <label>SKU <input name="sku" required /></label>
+                <label>Price <input name="price" type="number" min="0" step="0.01" required /></label>
+                <label>Stock <input name="stock" type="number" min="0" step="1" required /></label>
+                <label class="check"><input name="active" type="checkbox" checked /> Active product</label>
+                <button type="submit">Save product</button>
+              </form>
+              <div class="panel">
+                <h2>Product catalogue</h2>
+                <div class="table-wrap"><table id="productsTable"></table></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="customers" class="view">
+            <div class="grid-two">
+              <form id="customerForm" class="panel stack">
+                <h2>Add customer</h2>
+                <label>Name <input name="name" required /></label>
+                <label>Phone <input name="phone" /></label>
+                <label>Email <input name="email" type="email" /></label>
+                <label>Address <textarea name="address"></textarea></label>
+                <button type="submit">Save customer</button>
+              </form>
+              <div class="panel">
+                <h2>Customers</h2>
+                <div class="table-wrap"><table id="customersTable"></table></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="invoices" class="view">
+            <div class="grid-two wide-left">
+              <form id="invoiceForm" class="panel stack">
+                <h2>Generate invoice</h2>
+                <input type="hidden" name="id" />
+                <label>Manual Invoice Number <input name="number" id="manualInvoiceNumber" placeholder="e.g. INV-101 (Optional)" /></label>
+                <label>LPO Number <input name="lpo_number" placeholder="e.g. LPO-789 (Optional)" /></label>
+                <label>Customer name <input name="customer_name" list="customerNames" required /></label>
+                <label>Invoice date <input name="invoice_date" type="date" /></label>
+                <label>Due date <input name="due_date" type="date" /></label>
+                <label>VAT <input name="VAT" type="number" min="0" step="0.01" value="0" /></label>
+                <div id="invoiceItems" class="items"></div>
+                <button type="button" id="addInvoiceItem" class="ghost">Add item</button>
+                <button type="submit">Create printable invoice</button>
+              </form>
+              <div class="panel">
+                <h2>Invoices</h2>
+                <div class="table-wrap"><table id="invoicesTable"></table></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="credit" class="view">
+            <div class="grid-two">
+              <form id="creditForm" class="panel stack">
+                <h2>Generate credit note</h2>
+                <input type="hidden" name="id" />
+                <label>Manual Credit Note Number <input name="number" id="manualCreditNumber" placeholder="e.g. CN-101 (Optional)" /></label>
+                <label>Reference invoice <select name="invoice_id" id="creditInvoice"></select></label>
+                <label>Reason <textarea name="reason"></textarea></label>
+                <div id="creditItems" class="items"></div>
+                <button type="button" id="addCreditItem" class="ghost">Add item</button>
+                <label class="check"><input name="restock" type="checkbox" checked /> Return items to stock</label>
+                <button type="submit">Create credit note</button>
+              </form>
+              <div class="panel">
+                <h2>Credit notes</h2>
+                <div class="table-wrap"><table id="creditsTable"></table></div>
+              </div>
+            </div>
+          </section>
+
+          <section id="reports" class="view">
+            <div class="grid-two">
+              <form id="statementForm" class="panel stack">
+                <h2>Customer statement</h2>
+                <label>Customer name <input name="customer_name" list="customerNames" required /></label>
+                <button type="submit">Generate statement</button>
+              </form>
+              <form id="monthlyForm" class="panel stack">
+                <h2>Monthly sales report</h2>
+                <label>Month <input name="month" type="month" required /></label>
+                <button type="submit">Generate monthly report</button>
+              </form>
+              <form id="annualForm" class="panel stack">
+                <h2>Annual performance comparison</h2>
+                <label>Year <input name="year" type="number" min="2000" max="2099" value="2024" required /></label>
+                <button type="submit">Generate annual comparison</button>
+              </form>
+            </div>
+            <div class="panel">
+              <h2>Document archive</h2>
+              <div class="table-wrap"><table id="documentsTable"></table></div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+    <datalist id="customerNames"></datalist>
+    <div id="toast"></div>
+    <script src="/app.js?v=20260624"></script>
+  </body>
+</html>

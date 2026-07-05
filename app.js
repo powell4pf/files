@@ -56,7 +56,8 @@ function renderTable(selector, headers = [], rows = []) {
   const table = $(selector);
   table.innerHTML = `
     <thead><tr>${(headers || []).map((h) => `<th>${h}</th>`).join("")}</tr></thead>
-    <tbody>${(rows || []).length ? rows.filter(r => r).map((row) => `<tr>${(row || []).map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${(headers || []).length}">No records yet.</td></tr>`}</tbody>
+    <tbody>${(rows || []).length ? rows.filter(r => r).map((row) => `<tr>${(row || []).map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${(headers || []).length}">No results found.</td></tr>`}
+    </tbody>
   `;
 }
 
@@ -160,6 +161,30 @@ function renderTopCustomers(topCustomers = []) {
   ]));
 }
 
+// Helper function to attach status change listener
+function attachStatusListener(sel, statusColor) {
+  sel.addEventListener("change", async () => {
+    const newStatus = sel.value;
+    const color = statusColor[newStatus] || "#687872";
+    sel.style.color = color;
+    sel.style.borderColor = color;
+    
+    try {
+      await api(`/api/invoices/${sel.dataset.id}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      toast(`Invoice marked as ${newStatus}.`);
+      // Update local state so dashboard stays consistent without full reload
+      const inv = state.invoices.find(i => i.id == sel.dataset.id);
+      if (inv) inv.status = newStatus;
+    } catch (err) {
+      toast(err.message);
+      await loadAll(); // revert on error
+    }
+  });
+}
+
 async function loadAll() {
   const [dashboard, products, customers, invoices, credits, documents] = await Promise.all([
     api("/api/dashboard"),
@@ -218,7 +243,7 @@ async function loadAll() {
       i.number,
       i.customer_name,
       i.invoice_date,
-      `<select class="status-select ghost sm" data-id="${i.id}" style="color:${color};font-weight:700;border-color:${color};padding:0.28rem 0.5rem;border-radius:6px;background:white;cursor:pointer">
+      `<select class="status-select" data-id="${i.id}" style="color:${color};font-weight:700;border:2px solid ${color};padding:0.5rem 0.6rem;border-radius:6px;background:white;cursor:pointer;font-size:0.85rem;">
         <option${i.status==="Unpaid"?" selected":""}>Unpaid</option>
         <option${i.status==="Paid"?" selected":""}>Paid</option>
         <option${i.status==="Partially Paid"?" selected":""}>Partially Paid</option>
@@ -231,27 +256,12 @@ async function loadAll() {
       </div>`,
     ];
   }));
+  
+  // Attach listeners to all status selects
   document.querySelectorAll(".status-select").forEach(sel => {
-    sel.addEventListener("change", async () => {
-      const newStatus = sel.value;
-      const color = statusColor[newStatus] || "#687872";
-      sel.style.color = color;
-      sel.style.borderColor = color;
-      try {
-        await api(`/api/invoices/${sel.dataset.id}/status`, {
-          method: "POST",
-          body: JSON.stringify({ status: newStatus }),
-        });
-        toast(`Invoice marked as ${newStatus}.`);
-        // Update local state so dashboard stays consistent without full reload
-        const inv = state.invoices.find(i => i.id == sel.dataset.id);
-        if (inv) inv.status = newStatus;
-      } catch (err) {
-        toast(err.message);
-        await loadAll(); // revert on error
-      }
-    });
+    attachStatusListener(sel, statusColor);
   });
+  
   document.querySelectorAll(".edit-invoice").forEach(btn => {
     btn.onclick = () => {
       const i = state.invoices.find(inv => inv.id == btn.dataset.id);

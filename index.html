@@ -36,6 +36,10 @@
             <button class="nav" data-view="credit">Credit Notes</button>
             <button class="nav" data-view="reports">Reports</button>
           </nav>
+          <div class="sidebar-bottom">
+            <button class="nav sidebar-link" data-view="accessUsers">Access Users</button>
+            <p class="sidebar-hint">View the accounts allowed into the system.</p>
+          </div>
         </aside>
 
         <section class="workspace">
@@ -176,6 +180,17 @@
             <div class="panel">
               <h2>Document archive</h2>
               <div class="table-wrap"><table id="documentsTable"></table></div>
+            </div>
+          </section>
+
+          <section id="accessUsers" class="view">
+            <div class="panel stack">
+              <div class="panel-head">
+                <h2>Users with access</h2>
+                <span class="muted" id="accessUsersCount">0 users</span>
+              </div>
+              <p class="muted">This list includes local login accounts and any Google emails allowed in Supabase.</p>
+              <div class="table-wrap"><table id="accessUsersTable"></table></div>
             </div>
           </section>
         </section>

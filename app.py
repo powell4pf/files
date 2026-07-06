@@ -369,6 +369,30 @@ def handle_supabase_get(handler: "SalesHandler", path: str) -> bool:
         return False
     if path == "/api/health":
         handler.send_json({"ok": True, "database": "supabase"})
+    elif path == "/api/access-users":
+        local_users = SUPABASE.select("users", select="username,created_at", order="created_at.asc")
+        allowed_emails = [
+            email.strip().lower()
+            for email in os.environ.get("SUPABASE_ALLOWED_EMAILS", "").split(",")
+            if email.strip()
+        ]
+        access_users = [
+            {
+                "type": "Local login",
+                "identifier": row.get("username") or "Unknown",
+                "created_at": row.get("created_at") or "",
+            }
+            for row in local_users
+        ]
+        access_users.extend(
+            {
+                "type": "Google allowlist",
+                "identifier": email,
+                "created_at": "Configured in .env",
+            }
+            for email in allowed_emails
+        )
+        handler.send_json({"users": access_users})
     elif path == "/api/dashboard":
         products = SUPABASE.select("products", active="eq.true")
         invoices = SUPABASE.select("invoices")

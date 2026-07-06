@@ -5,6 +5,7 @@ const state = {
   invoices: [],
   credits: [],
   documents: [],
+  accessUsers: [],
 };
 let mainChart = null;
 
@@ -161,6 +162,16 @@ function renderTopCustomers(topCustomers = []) {
   ]));
 }
 
+function renderAccessUsers(users = []) {
+  const safeUsers = (Array.isArray(users) ? users : []).filter(Boolean);
+  $("#accessUsersCount").textContent = `${safeUsers.length} user${safeUsers.length === 1 ? "" : "s"}`;
+  renderTable("#accessUsersTable", ["Type", "Identifier", "Added"], safeUsers.map((user) => [
+    user.type || "-",
+    user.identifier || "-",
+    user.created_at || "-",
+  ]));
+}
+
 // Helper function to attach status change listener
 function attachStatusListener(sel, statusColor) {
   sel.addEventListener("change", async () => {
@@ -186,13 +197,14 @@ function attachStatusListener(sel, statusColor) {
 }
 
 async function loadAll() {
-  const [dashboard, products, customers, invoices, credits, documents] = await Promise.all([
+  const [dashboard, products, customers, invoices, credits, documents, accessUsers] = await Promise.all([
     api("/api/dashboard"),
     api("/api/products"),
     api("/api/customers"),
     api("/api/invoices"),
     api("/api/credit-notes"),
     api("/api/documents"),
+    api("/api/access-users"),
   ]);
 
   // Ensure all state variables are arrays to prevent .map() errors
@@ -201,6 +213,7 @@ async function loadAll() {
   state.invoices = (Array.isArray(invoices) ? invoices : []).filter(i => i);
   state.credits = (Array.isArray(credits) ? credits : []).filter(cr => cr);
   state.documents = (Array.isArray(documents) ? documents : []).filter(d => d);
+  state.accessUsers = (Array.isArray(accessUsers?.users) ? accessUsers.users : []).filter(u => u);
 
   const dbStats = dashboard || {};
   animateValue("#metricProducts", 0, dashboard.products?.count || 0, 800);
@@ -211,6 +224,7 @@ async function loadAll() {
   
   renderDocuments(dashboard.documents || []);
   renderTopCustomers(dashboard.top_customers || []);
+  renderAccessUsers(state.accessUsers);
   updateCharts(dashboard);
 
   renderTable("#productsTable", ["Name", "SKU", "Price", "Stock", "Status"], state.products.map((p) => [

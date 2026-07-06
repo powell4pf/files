@@ -38,20 +38,28 @@ button:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(15, 107
 
 .shell { min-height: 100vh; }
 .login-view {
+  position: relative;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 2rem;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(247, 242, 232, .84), rgba(239, 247, 241, .78)),
+    url("/assets/login-background.png") center/cover no-repeat;
+  background-attachment: fixed;
 }
 .login-panel {
   width: min(480px, 100%);
-  background: rgba(255, 255, 255, .84);
-  border: 1px solid rgba(255,255,255,.7);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, .72);
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 10px;
   padding: 2rem;
-  box-shadow: 0 22px 70px rgba(36, 55, 47, .16);
-  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 74px rgba(36, 55, 47, .18);
+  backdrop-filter: blur(20px);
   animation: rise .45s ease both;
+  position: relative;
+  z-index: 1;
 }
 .login-panel h1 { margin: .2rem 0 .8rem; font-size: clamp(2rem, 7vw, 3.6rem); line-height: .98; }
 .muted, .eyebrow { color: var(--muted); }
@@ -89,6 +97,25 @@ textarea { min-height: 88px; resize: vertical; }
 .sidebar .eyebrow { color: #a9c8bd; }
 .sidebar h2 { margin: .2rem 0 0; }
 nav { display: grid; gap: .45rem; }
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.sidebar-link {
+  width: 100%;
+  text-align: left;
+  background: rgba(255,255,255,.08);
+  color: #f0f7f3;
+  border: 1px solid rgba(255,255,255,.12);
+}
+.sidebar-link:hover { background: rgba(255,255,255,.14); box-shadow: none; }
+.sidebar-hint {
+  margin: .55rem 0 0;
+  color: #a9c8bd;
+  font-size: .82rem;
+  line-height: 1.4;
+}
 .nav {
   width: 100%;
   text-align: left;
